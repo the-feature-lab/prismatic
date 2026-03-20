@@ -4,8 +4,6 @@ import math
 
 from utils import ensure_numpy, ensure_torch
 
-from torch.utils.data import TensorDataset, DataLoader
-
 
 def get_powerlaw(P, exp, offset=3, normalize=True):
     pl = (offset+np.arange(P)) ** -exp
