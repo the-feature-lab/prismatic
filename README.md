@@ -2,19 +2,43 @@
 
 Library for Feature Lab empirics.
 
+For local development:
+```
+# Run this when starting a new project with uv
+uv add "flab @ git+https://github.com/the-feature-lab/flab"
+# Run these when the flab repo gets updated -- otherwise uv's local copy doesn't sync.
+uv lock --upgrade-package flab
+uv sync
+```
+
+For colab:
+```
+!pip install git+https://github.com/the-feature-lab/flab
+```
+
+Then the following should work:
+```
+from flab.empirics import rcsetup
+from flab.mupify import mupify
+from flab.prismatic.feature_decomp import generate_hea_monomials
+# etc
+```
+
 ## Structure
 
 ```
 flab/
-├── core/               # General-purpose ML research utilities
-│   ├── devices.py          # Device management and tensor/array conversion
-│   ├── empirics.py         # Plotting, experiment measurements (ExptTrace), and file I/O (FileManager)
-│   ├── imagedata.py        # Image dataset loading, downloading, and preprocessing
-│   └── krr.py              # Kernel ridge regression and eigenlearning theory
+├── data/               # Dataset utilities
+│   ├── hermite.py          # Synthetic data generation (power-law, polynomial/Hermite targets)
+│   └── vision.py           # Image dataset loading, downloading, and preprocessing
 │
-└── prismatic/          # Tools for polynomial/Hermite feature analysis
-    ├── data.py             # Synthetic data generation (power-law, polynomial targets)
-    ├── feature_decomp.py   # Monomial representation and HEA eigenvalue computation
-    ├── models.py           # Neural network architectures (MLP, CNN, ExpanderMLP)
-    └── utils.py            # Lower-level array/tensor utilities and seeding
+├── prismatic/          # Tools for polynomial/Hermite feature analysis
+│   ├── feature_decomp.py   # Monomial representation and HEA eigenvalue computation
+│   └── utils.py            # Lower-level array/tensor utilities and seeding
+│
+├── devices.py          # Device management and tensor/array conversion
+├── empirics.py         # Plotting, experiment measurements (ExptTrace), and file I/O (FileManager)
+├── krr.py              # Kernel ridge regression and eigenlearning theory
+├── models.py           # Neural network architectures (MLP, CNN, ExpanderMLP)
+└── mupify.py           # Maximal Update Parametrization (muP) utilities
 ```

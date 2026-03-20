@@ -1,6 +1,5 @@
 import heapq
 import numpy as np
-from tqdm import tqdm
 from utils import ensure_numpy
 
 
