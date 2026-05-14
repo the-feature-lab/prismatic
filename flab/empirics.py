@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import pickle
 import os
@@ -212,6 +213,53 @@ class ExptTrace():
         except KeyError as e:
             raise ValueError(f"Missing key in serialized data: {e}")
         return obj
+
+
+class StreamingTrace(ExptTrace):
+    """ExptTrace subclass that appends each measurement to a JSONL file as it is recorded.
+
+    Useful for live monitoring (e.g. a Streamlit dashboard) during long training runs.
+    The JSONL file can be read incrementally while training is in progress; the in-memory
+    ExptTrace remains available for post-run analysis.
+
+    Each line of the JSONL file is a JSON object with one key per var_name plus "outcome".
+
+    Example:
+        loss_trace = StreamingTrace(["step"], "runs/loss.jsonl")
+        loss_trace[0] = 2.31
+        loss_trace[100] = 1.87
+        # runs/loss.jsonl now contains:
+        #   {"step": 0, "outcome": 2.31}
+        #   {"step": 100, "outcome": 1.87}
+    """
+
+    def __init__(self, var_names, path):
+        super().__init__(var_names)
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        self._path = path
+        self._file = None
+
+    def __enter__(self):
+        self._file = open(self._path, "a")
+        return self
+
+    def __setitem__(self, key, val):
+        super().__setitem__(key, val)
+        config = (key,) if not isinstance(key, tuple) else key
+        record = dict(zip(self.var_names, (c.item() if isinstance(c, np.generic) else c for c in config)))
+        record["outcome"] = np.asarray(val).tolist()
+        if self._file is None:
+            raise RuntimeError("file not open for writing")
+        self._file.write(json.dumps(record) + "\n")
+        self._file.flush()
+
+    def close(self):
+        if self._file is not None:
+            self._file.close()
+            self._file = None
+
+    def __exit__(self, *_):
+        self.close()
 
 
 class FileManager():
