@@ -237,29 +237,15 @@ class StreamingTrace(ExptTrace):
         super().__init__(var_names)
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         self._path = path
-        self._file = None
-
-    def __enter__(self):
-        self._file = open(self._path, "a")
-        return self
+        open(path, "w").close()  # clear any existing contents
 
     def __setitem__(self, key, val):
         super().__setitem__(key, val)
         config = (key,) if not isinstance(key, tuple) else key
         record = dict(zip(self.var_names, (c.item() if isinstance(c, np.generic) else c for c in config)))
         record["outcome"] = np.asarray(val).tolist()
-        if self._file is None:
-            raise RuntimeError("file not open for writing")
-        self._file.write(json.dumps(record) + "\n")
-        self._file.flush()
-
-    def close(self):
-        if self._file is not None:
-            self._file.close()
-            self._file = None
-
-    def __exit__(self, *_):
-        self.close()
+        with open(self._path, "a") as f:
+            f.write(json.dumps(record) + "\n")
 
 
 class FileManager():
